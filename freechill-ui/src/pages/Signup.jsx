@@ -1,29 +1,148 @@
-import React from 'react'
-import styled from 'styled-components';
-import BackgroundImage from '../components/BackgroundImage';
-import Header from '../components/Header';
-
+import React, { useState } from "react";
+import styled from "styled-components";
+import BackgroundImage from "../components/BackgroundImage";
+import Header from "../components/Header";
+import { createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import { firebaseAuth } from "../utils/firebase-config";  
+import { useNavigate } from "react-router-dom";
 export default function Signup() {
+  const navigate = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [formValues, setFormValues] = useState({
+    email: "",
+    password: "",
+  });
+
+  const handleSignIn = async() => {
+    try{
+      const {email, password} = formValues;
+      await createUserWithEmailAndPassword(firebaseAuth,email,password);
+    }catch(err){
+      console.log(err);
+    }
+  };
+
+
+  onAuthStateChanged(firebaseAuth, (CurrentUser) => {
+    if(CurrentUser) navigate("/");
+  });
+
+
   return (
-    <Container>
-      <BackgroundImage/>
-      <Header/>
-      <div className='.body.flex.column.a-centre.j-center'>
-        <div className='text fle column'>
-          <h1>Unlimited movies, TV shows and more</h1>
-          <h4>Watch anywhere and cancel anytime</h4>
-          <h6>Ready to watch? Enter your email to create or restart membership</h6>
+    <Container showPassword={showPassword}>
+      <BackgroundImage />
+      <div className="content">
+        <Header login />
+        <div className="body flex column a-center j-center">
+          <div className="text flex column">
+            <h1>Unlimited movies, TV shows and more</h1>
+            <h4>Watch anywhere and cancel anytime</h4>
+            <h6>
+              Ready to watch? Enter your email to create or restart membership
+            </h6>
+          </div>
+          <div className="form">
+            <input
+              type="email"
+              placeholder="Email Address"
+              name="email"
+              value={formValues.email}
+              onChange={(e) =>
+                setFormValues({
+                  ...formValues,
+                  [e.target.name]: e.target.value,
+                })
+              }
+            />
+            {showPassword && (
+              <input
+                type="password"
+                placeholder="Password"
+                name="password"
+                value={formValues.password}
+                onChange={(e) =>
+                  setFormValues({
+                    ...formValues,
+                    [e.target.name]: e.target.value,
+                  })
+                }
+              />
+            )}
+            {!showPassword && (
+              <button onClick={() => setShowPassword(true)}>Get Started</button>
+            )}
+          </div>
+          <button onClick={handleSignIn}>Sign Up</button>
         </div>
-        <div className='form'>
-          <input type='email' placeholder='Email Address' name='email'/>
-          <input type='password' placeholder='Password' name='password'/>
-          <button>Get Started</button>          
-          
-        </div>
-        <button>Login In</button>
-      </div>  
-      </Container>
-  )
+      </div>
+    </Container>
+  );
 }
 
-const Container = styled.div``;
+const Container = styled.div`
+  position: relative;
+  .content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    grid-template-rows: 15vh 85vh;
+    .body {
+      gap: 1rem;
+      .text {
+        text-align: center;
+        h1 {
+          padding: 0;
+        }
+        h4 {
+          padding: 0;
+          color: #e50914;
+        }
+        h6 {
+          padding: 0;
+          color: #ffffff;
+        }
+      }
+      .form {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1rem;
+        width: 60%;
+        input {
+          color: black;
+          padding: 1.5rem;
+          font-size: 2rem;
+          width: 100%;
+          border: none;
+          border: 1px solid black;
+          margin-bottom: 1rem;
+          &:focus {
+            outline: none;
+          }
+        }
+        button {
+          padding: 0.5rem 1rem;
+          background-color: #e50914;
+          border: none;
+          color: white;
+          cursor: pointer;
+          font-weight: bolder;
+          font-size: 1.05rem;
+        }
+      }
+      button {
+        padding: 0.5rem 1rem;
+        background-color: #e50914;
+        border: none;
+        color: white;
+        cursor: pointer;
+        border-radius: 0.2rem;
+        font-weight: bolder;
+        font-size: 1.05rem;
+      }
+    }
+  }
+`;
